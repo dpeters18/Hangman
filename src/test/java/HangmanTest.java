@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public class HangmanTest {
     public HangmanMethods method= new HangmanMethods();
 @Test
-  void randomword()
+  void randomWord()
 {
     for(int i=0;i<20;i++)
     {
-        System.out.println(method.randomword());
+        System.out.println(method.randomWord());
     }
 }
 @Test
@@ -33,18 +33,19 @@ public class HangmanTest {
 @Test
     void contains()
 {
-    assertEquals(method.contains(("rectangle").toCharArray(),'e'), new ArrayList<>(List.of(1, 8)));
-    assertEquals(method.contains(("rectangle").toCharArray(),'s'),new ArrayList<Integer>());
-    assertEquals(method.contains(("rectangle").toCharArray(),'3'),new ArrayList<Integer>());
+    assertEquals(method.contains("rectangle","e"), new ArrayList<>(List.of(1, 8)));
+    assertEquals(method.contains("rectangle","s"),new ArrayList<Integer>());
+    assertEquals(method.contains("rectangle","3"),new ArrayList<Integer>());
 }
 @Test
     void hasBlanks()
 {
-    assertFalse(method.hasBlanks(("asjdfh").toCharArray()));
-    assertTrue(method.hasBlanks(("asjd_h").toCharArray()));
-    assertFalse(method.hasBlanks(("").toCharArray()));
-    assertTrue(method.hasBlanks(("_sjfh").toCharArray()));
-    assertTrue(method.hasBlanks(("asjdf_").toCharArray()));
+    assertFalse(method.hasBlanks("asdjlfbgkdjvxzvgkbft"));
+    assertTrue(method.hasBlanks("asjd_h"));
+    assertFalse(method.hasBlanks(""));
+    assertTrue(method.hasBlanks("_sjfh"));
+    assertTrue(method.hasBlanks("asjdf_"));
+
 
 }
 }

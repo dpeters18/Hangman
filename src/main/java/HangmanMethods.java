@@ -1,60 +1,68 @@
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.nio.file.Files;
+
 
 public class HangmanMethods {
-    public void simulation(){
-        Scanner scan=new Scanner(System.in);
-        ArrayList<Character> guesses=new ArrayList<>();
-        int tries=0;
-        String word=randomword();
-        char[] chars=word.toCharArray();
-        char[] blanks=new char[chars.length];
-        for (int i=0;i<chars.length;i++)
-        {
-            blanks[i]='_';
-        }
-        System.out.println(phase(tries)+"\n"+(new String(blanks))+"\n Missed letters:"+guesses);
-        System.out.println("Guess a letter for a word with "+chars.length+" blanks.");
+    Scanner scan=new Scanner(System.in);
+    String word;
+    Charset utf= StandardCharsets.UTF_8;
+    public HangmanMethods(){
+        word=randomWord();
+    }
+    public void simulation(String guesses,int tries,String blanks){
+        if(tries==0){
+        System.out.println(phase(tries)+"\n"+(blanks)+"\n Guessed letters:"+guesses);
+        System.out.println("Guess a letter for a word with "+word.length()+" blanks.");}
 
-        String inputt=scan.nextLine();
-        do {
-            while (inputt.length() != 1||!alphabetic(inputt)) {
-                System.out.println("Must guess a letter.");
-                inputt = scan.nextLine();
-            }
-            while (guesses.contains(inputt.charAt(0))){
-                System.out.println("You already guessed that letter.");
-                inputt = scan.nextLine();
-                while (inputt.length() != 1||!alphabetic(inputt)) {
-                    System.out.println("Must guess a letter.");
-                    inputt = scan.nextLine();
-                }
-            }
-            ArrayList<Integer> instas = contains(chars, inputt.charAt(0));
+       // String inputt=scan.nextLine();
+            String validated = ensureALetter();
+            ArrayList<String> original=wasGuessed(validated,guesses);
+            ArrayList<Integer> instas = contains(word, original.get(0));
+            guesses=original.get(1);
+            //in case the letter typed is not in the secret word:
             if (instas.isEmpty()) {
                 tries++;
-                guesses.add(inputt.charAt(0));
-                System.out.println(phase(tries) + "\n" + (new String(blanks))+"\n Missed letters:"+guesses);
+                System.out.println(phase(tries) + "\n" + (blanks)+"\n Guessed letters:"+guesses);
                 if(tries<6) {
                     System.out.println("Guess another letter.");
-                    inputt = scan.nextLine();
                 }
                 else {
                     System.out.println("You lost. The word was:"+word);
                 }
             }
+
             if (!instas.isEmpty()) {
-                for (Integer num : instas)
-                    blanks[num] = inputt.charAt(0);
-                System.out.println(phase(tries) + "\n" + (new String(blanks))+"\n Missed letters:"+guesses);
+                String finalGuesses = guesses;
+                Optional<String> filledin= Arrays.stream(word.split("")).map(sl -> finalGuesses.contains(sl) ? sl : "_").reduce(String::concat);
+                if(filledin.isPresent())
+                 blanks= filledin.get();
+                System.out.println(phase(tries) + "\n" + (blanks)+"\n Guessed letters:"+guesses);
                 if(hasBlanks(blanks)) {
                     System.out.println("Guess another letter.");
-                    inputt = scan.nextLine();
+                    validated = scan.nextLine();
                 }
                 else{
-                    System.out.println("Yes! The secret word is "+word+"! You have won!");
+                    System.out.println("Yes! The secret word is "+word+"! You have won! Your score is "+(6-tries)+"." +
+                            "The highest score is "+highestScore()+".");
+                    try{
+                        System.out.println("Please type your name for your score to be logged:");
+                        String name=scan.next();
+                    Files.write(Paths.get("C:/Users/Devon/IdeaProjects/Hangman/src/main/resources/scores.text"),
+                            List.of(name+","+ (6 - tries)),utf,
+                            StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+                    }
+                    catch(Exception e){
+                        System.out.println("File couldn't be found or written to.");
+                    }
                 }
             }
-        }while(tries<6&&hasBlanks(blanks));
+        if(tries<6&&hasBlanks(blanks))
+            simulation(guesses,tries,blanks);
     }
     public ArrayList<Integer> contains(char[] cha,char letter){
         ArrayList<Integer> indeces=new ArrayList<>();
@@ -74,54 +82,44 @@ public class HangmanMethods {
          return false;
         }
     }
-    public boolean hasBlanks(char[] s)
+    public boolean hasBlanks(String s)
     {
-        for(char c:s)
-        {
-            if(c=='_')
-                return true;
-        }
-        return false;
+        return s.contains("_");
     }
     public String phase(int n){
-        ArrayList<String> phases=new ArrayList<>();
-        phases.add(" +---+\n     |\n     |\n     |\n     |\n=======");
-        phases.add(" +---+\n O   |\n     |\n     |\n     |\n=======");
-        phases.add(" +---+\n O   |\n |   |\n     |\n     |\n=======");
-        phases.add(" +---+\n O   |\n |   |\n/    |\n     |\n=======");
-        phases.add(" +---+\n O   |\n |   |\n/ \\  |\n     |\n=======");
-        phases.add(" +---+\n O   |\n/|   |\n/ \\  |\n     |\n=======");
-        phases.add(" +---+\n O   |\n/|\\  |\n/ \\  |\n     |\n=======");
-        try{
-            return phases.get(n);
+
+        try{List<String> phases=Files
+                .readAllLines(Paths.get("C:/Users/Devon/IdeaProjects/Hangman/src/main/resources/hangmanStates.text"),utf);
+            return phases.get(6*n)+"\n"+phases.get(6*n+1)+"\n"+phases.get(6*n+2)+"\n"
+                    +phases.get(6*n+3)+"\n"+phases.get(6*n+4)+"\n"+phases.get(6*n+5)+"\n";
         }
         catch(Exception e){
-            return "Not a valid turn number.";
+            return "¯\\_(ツ)_/¯";
         }
     }
-    public String randomword(){
-        ArrayList<String> wordbank=new ArrayList<>();
-        wordbank.add("a");
-        wordbank.add("frog");
-        wordbank.add("is");
-        wordbank.add("one");
-        wordbank.add("of");
-        wordbank.add("many");
-        wordbank.add("carnivorous");
-        wordbank.add("amphibians");
-        wordbank.add("that");
-        wordbank.add("has");
-        wordbank.add("no");
-        wordbank.add("tail");
-        wordbank.add("and");
-        wordbank.add("starts");
-        wordbank.add("from");
-        wordbank.add("tadpole");
-        wordbank.add("salamander");
-        wordbank.add("webbed");
-        wordbank.add("feet");
-        wordbank.add("tortoise");
+    public String randomWord(){
+        try{
+        List<String> wordbank=Files
+                .readAllLines(Paths.get("C:/Users/Devon/IdeaProjects/Hangman/src/main/resources/wordbank.text"),utf);
         Random rand=new Random();
-        return wordbank.get(rand.nextInt(wordbank.size()));
+        return wordbank.get(rand.nextInt(wordbank.size()));}
+        catch(Exception e){
+            return "frog";
+        }
+    }
+
+    public String getWord() {
+        return word;
+    }
+    public int highestScore() {
+        try {
+        List<String> lines = Files.readAllLines(Paths.get("C:/Users/Devon/IdeaProjects/Hangman/src/main/resources/scores.text"), utf);
+        return lines.stream()
+                    .map(s -> Integer.parseInt(String.valueOf(s.charAt(s.length() - 1))))
+                    .reduce(0, Integer::max);
+        }
+        catch(Exception e){
+        return 0;
+        }
     }
 }
