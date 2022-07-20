@@ -17,11 +17,11 @@ public class HangmanTest {
 @Test
   void alphabetic()
 {
-    assertFalse(method.alphabetic("3e"));
-    assertTrue(method.alphabetic("q"));
-    assertFalse(method.alphabetic("3"));
-    assertFalse(method.alphabetic(null));
-    assertFalse(method.alphabetic("=+="));
+    assertFalse(method.isAlphabetic("3e"));
+    assertTrue(method.isAlphabetic("q"));
+    assertFalse(method.isAlphabetic("3"));
+    assertFalse(method.isAlphabetic(null));
+    assertFalse(method.isAlphabetic("=+="));
 }
 @Test
     void phase()
@@ -48,4 +48,5 @@ public class HangmanTest {
 
 
 }
+
 }

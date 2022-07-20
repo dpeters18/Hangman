@@ -64,16 +64,50 @@ public class HangmanMethods {
         if(tries<6&&hasBlanks(blanks))
             simulation(guesses,tries,blanks);
     }
-    public ArrayList<Integer> contains(char[] cha,char letter){
-        ArrayList<Integer> indeces=new ArrayList<>();
-        for(int i=0;i<cha.length;i++)
-        {
-            if (cha[i]==letter)
-                indeces.add(i);
+
+
+    String ensureALetter(){
+        var input = scan.next();
+        if(input.length() != 1||!isAlphabetic(input)) {
+            System.out.println("Must guess a letter.");
+            return ensureALetter();
         }
-        return indeces;
+        return input;
     }
-    public boolean alphabetic(String s){
+    ArrayList<String> wasGuessed(String guess,String guesses) {
+        if (!guesses.contains(guess)) {
+            if(guesses.length()==0){
+                return new ArrayList<>(List.of(guess,guess));
+            }
+           String total=guesses + "," + guess;
+           return new ArrayList<>(List.of(guess,total));
+        }
+        else {
+            System.out.println("You already guessed that letter. Previous guesses include:" + guesses);
+            String letter=ensureALetter();
+           return wasGuessed(letter,guesses);
+        }
+    }
+    record Data(ArrayList<Integer> indices, int counter) {
+        Data next(boolean recordIndex) {
+            var temp = new ArrayList<>(indices);
+            if (recordIndex) {
+                temp.add(this.counter);
+            }
+            return new Data(temp, counter + 1);
+        }
+    }
+
+    public ArrayList<Integer> contains(String str,String letter){
+
+        return Arrays.stream(str.split("")).reduce(
+                new Data(new ArrayList<>(), 0) ,
+                (acc, next) -> next.equals(String.valueOf(letter)) ? acc.next(true) : acc.next(false),
+                (t1, t2) -> t1
+        ).indices;
+
+    }
+    public boolean isAlphabetic(String s){
         try{
             return Character.isAlphabetic(Character.codePointAt((s.toCharArray()),0));
         }
